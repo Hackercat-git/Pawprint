@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<nmaprun><host><status state="up"/><address addr="192.168.1.10" addrtype="ipv4"/><address addr="AA:BB:CC:DD:EE:01" addrtype="mac" vendor="Example Vendor"/><hostnames><hostname name="pve1.lan"/></hostnames>
+<ports><port protocol="tcp" portid="22"><state state="open"/><service name="ssh" product="OpenSSH" version="9.2"/></port><port protocol="tcp" portid="8006"><state state="open"/><service name="https" product="Proxmox"/></port></ports></host>
+<host><status state="up"/><address addr="192.168.1.2" addrtype="ipv4"/><ports><port protocol="tcp" portid="23"><state state="open"/><service name="telnet"/></port></ports></host></nmaprun>

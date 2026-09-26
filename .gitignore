@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+*.html
+*.xml
+!sample_scan.xml
