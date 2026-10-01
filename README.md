@@ -27,7 +27,7 @@
 ## Sample output
 
 Want to see what a report looks like before running it?
-👉 **[View sample report](sample_report.html)** — generated from the included `sample_scan.xml`
+👉 **[View sample report](https://htmlpreview.github.io/?https://github.com/Hackercat-git/Pawprint/blob/main/sample_report.html)** — generated from the included `sample_scan.xml`
 
 ---
 
