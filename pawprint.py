@@ -24,6 +24,8 @@ import urllib.request
 import urllib.error
 from html import escape
 
+__version__ = "1.1.0"
+
 try:
     from defusedxml import ElementTree as ET
 except ImportError:
@@ -168,26 +170,47 @@ def parse(xml_text: str) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Optional CVE hints via NIST NVD API
 # ---------------------------------------------------------------------------
-def fetch_cve_hint(service: str, version: str) -> str:
-    """Return a short CVE summary string or empty string."""
+_NVD_LAST_CALL: float = 0.0
+_NVD_RATE = 6.0  # seconds between calls without API key
+
+
+def fetch_cve_hint(service: str, version: str, api_key: str = "") -> str:
+    """Return a short CVE summary string or empty string.
+
+    Respects NVD rate limits: 5 req/30s without key (~6s gap), 50 req/30s with key.
+    """
+    import time
+    import urllib.parse
+
+    global _NVD_LAST_CALL
+
     if not service or not version:
         return ""
+
+    wait = 0.6 if api_key else _NVD_RATE
+    elapsed = time.monotonic() - _NVD_LAST_CALL
+    if elapsed < wait:
+        time.sleep(wait - elapsed)
+
     keyword = f"{service} {version}".strip()[:80]
     url = (
         "https://services.nvd.nist.gov/rest/json/cves/2.0"
         f"?keywordSearch={urllib.parse.quote(keyword)}&resultsPerPage=1"
     )
+    headers = {"apiKey": api_key} if api_key else {}
+
     try:
-        import urllib.parse
-        with urllib.request.urlopen(url, timeout=5) as r:
+        req = urllib.request.Request(url, headers=headers)
+        _NVD_LAST_CALL = time.monotonic()
+        with urllib.request.urlopen(req, timeout=10) as r:
             data = json.loads(r.read())
         vulns = data.get("vulnerabilities", [])
         if vulns:
             cve_id = vulns[0]["cve"]["id"]
             desc = vulns[0]["cve"]["descriptions"][0]["value"][:100]
             return f"{cve_id}: {desc}…"
-    except Exception:
-        pass
+    except Exception as exc:
+        log.debug("CVE lookup failed for %s %s: %s", service, version, exc)
     return ""
 
 
@@ -298,7 +321,7 @@ JS = """
 # ---------------------------------------------------------------------------
 # Render HTML
 # ---------------------------------------------------------------------------
-def render(hosts: list[dict], target: str, cve: bool = False) -> str:
+def render(hosts: list[dict], target: str, cve: bool = False, nvd_key: str = "") -> str:
     total_ports = sum(len(h["ports"]) for h in hosts)
     flagged     = sum(1 for h in hosts for p in h["ports"] if p["port"] in RISKY)
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -363,7 +386,7 @@ def render(hosts: list[dict], target: str, cve: bool = False) -> str:
                 flag = f"<span class='flag'>⚠️ {escape(note)}</span>" if note else ""
                 cve_hint = ""
                 if cve and p["service"] and p["version"]:
-                    hint = fetch_cve_hint(p["service"], p["version"])
+                    hint = fetch_cve_hint(p["service"], p["version"], api_key=nvd_key)
                     if hint:
                         cve_hint = f"<span class='cve'>🔎 {escape(hint)}</span>"
                 risk_attr = "1" if note else "0"
@@ -403,6 +426,7 @@ def main() -> None:
                         metavar="{0-5}", help="nmap timing template (default: 4)")
     parser.add_argument("--os",   action="store_true", help="Enable OS detection (requires root/sudo)")
     parser.add_argument("--cve",  action="store_true", help="Fetch CVE hints from NVD (requires internet)")
+    parser.add_argument("--nvd-key", default="", metavar="KEY", help="NVD API key (higher rate limit)")
     parser.add_argument("--allow-public", action="store_true",
                         help="Allow non-private targets (only your own systems!)")
     parser.add_argument("--verbose", action="store_true", help="Show debug output")
@@ -433,7 +457,7 @@ def main() -> None:
 
     # Write HTML
     with open(out_html, "w", encoding="utf-8") as f:
-        f.write(render(hosts, label, cve=args.cve))
+        f.write(render(hosts, label, cve=args.cve, nvd_key=getattr(args, "nvd_key", "")))
     log.info("Report written to %s (%d hosts)", out_html, len(hosts))
 
     # Write JSON (optional)

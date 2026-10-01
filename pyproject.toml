@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "pawprint"
+version = "1.1.0"
+description = "Turn an nmap scan of your own network into a clean HTML report"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+dependencies = ["defusedxml>=0.7.1"]
+
+[project.scripts]
+pawprint = "pawprint:main"
+
+[project.urls]
+Homepage = "https://github.com/Hackercat-git/Pawprint"
+Issues   = "https://github.com/Hackercat-git/Pawprint/issues"
