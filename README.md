@@ -24,6 +24,13 @@
 
 ---
 
+## Sample output
+
+Want to see what a report looks like before running it?
+👉 **[View sample report](sample_report.html)** — generated from the included `sample_scan.xml`
+
+---
+
 ## Installation
 
 **Requirements:** Python 3.8+, and `nmap` installed for live scans.
@@ -99,6 +106,15 @@ pytest test_pawprint.py -v
 - No data is sent anywhere unless you use `--cve` (NVD API)
 
 ---
+
+## Legal disclaimer
+
+> **Pawprint is provided for authorised use only.**
+>
+> You may only use this tool to scan networks and devices that you own or have **explicit written permission** to test. Scanning systems without authorisation may violate computer crime laws in your jurisdiction (including but not limited to the Dutch *Computer Crime Act*, the EU NIS2 Directive, and the US Computer Fraud and Abuse Act).
+>
+> The author(s) of Pawprint accept **no liability** for any damage, legal consequences, or misuse arising from the use of this tool. Use responsibly.
+
 
 ## License
 

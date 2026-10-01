@@ -1,0 +1,97 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Pawprint — Network Report</title><style>
+:root{
+  --bg:#f5f5f7;--fg:#1c1c1e;--card:#fff;--mut:#6b7280;
+  --line:#e5e7eb;--acc:#2563eb;--warn:#b45309;--warnbg:#fef3c7;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#0b0b0d;--fg:#f3f4f6;--card:#17171a;--mut:#9ca3af;
+        --line:#2e2e33;--acc:#60a5fa;--warn:#fbbf24;--warnbg:#292016;}
+}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 16px;background:var(--bg);color:var(--fg);
+     font:15px/1.5 system-ui,sans-serif}
+main{max-width:980px;margin:0 auto}
+h1{margin:0 0 4px;font-size:1.5rem}
+.sub{color:var(--mut);margin-bottom:20px;font-size:.9rem}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;
+      padding:10px 16px;min-width:110px}
+.stat b{display:block;font-size:1.4rem}
+.stat span{color:var(--mut);font-size:.85rem}
+details.host{background:var(--card);border:1px solid var(--line);
+             border-radius:10px;padding:0;margin-bottom:12px;overflow:hidden}
+details.host summary{cursor:pointer;padding:12px 16px;list-style:none;
+                      display:flex;align-items:center;gap:8px;font-weight:600}
+details.host summary::-webkit-details-marker{display:none}
+details.host summary::before{content:"▶";font-size:.7rem;color:var(--mut);
+                              transition:transform .15s;flex-shrink:0}
+details.host[open] summary::before{transform:rotate(90deg)}
+.host-body{padding:0 16px 14px}
+.meta{color:var(--mut);font-size:.85rem;margin:0 0 8px}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:500;font-size:.82rem;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+.flag{background:var(--warnbg);color:var(--warn);border-radius:6px;
+      padding:1px 7px;font-size:.78rem;white-space:nowrap}
+.cve{color:var(--mut);font-size:.78rem;display:block;margin-top:2px}
+.overflow{overflow-x:auto}
+.disclaimer{background:var(--warnbg);border:1px solid var(--warn);color:var(--warn);
+  border-radius:8px;padding:10px 14px;font-size:.85rem;margin-bottom:20px;line-height:1.5}
+.disclaimer strong{display:block;margin-bottom:2px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.filters input,.filters select{
+  background:var(--card);color:var(--fg);border:1px solid var(--line);
+  border-radius:6px;padding:4px 10px;font-size:.88rem}
+#no-results{display:none;color:var(--mut);padding:12px 0}
+</style></head><body><main><h1>🐾 Pawprint — Network Report</h1><div class='sub'>192.168.1.0/24 (demo) &middot; generated 2026-10-01 05:59</div><div class='stats'><div class='stat'><b>2</b><span>hosts up</span></div><div class='stat'><b>3</b><span>open ports</span></div><div class='stat'><b>3</b><span>ports to review</span></div></div><div class='disclaimer'><strong>⚠️ Legal use only</strong>Pawprint is provided for authorised network scanning only. Only scan systems you own or have explicit written permission to test. Unauthorised scanning may violate computer crime laws in your jurisdiction. The author accepts no liability for misuse of this tool.</div><div class='filters'><input id='q' type='search' placeholder='Filter by IP, host, service…' style='flex:1;min-width:180px'><select id='risk-filter'><option value=''>All ports</option><option value='1'>⚠️ Risky only</option></select></div><div id='no-results'>No results match your filter.</div><details class='host'><summary>192.168.1.2 <span class='flag'>⚠️ review</span></summary><div class='host-body'><div class='meta'>no extra info</div><div class='overflow'><table><thead><tr><th data-sort='0'>Port</th><th data-sort='1'>Service</th><th data-sort='2'>Version</th><th>Note</th></tr></thead><tbody><tr data-host='1' data-risk='1' data-search='192.168.1.2  23 telnet '><td>23/tcp</td><td>telnet</td><td></td><td><span class='flag'>⚠️ Telnet: unencrypted, replace with SSH</span></td></tr></tbody></table></div></div></details><details class='host'><summary>192.168.1.10 &mdash; pve1.lan <span class='flag'>⚠️ review</span></summary><div class='host-body'><div class='meta'>MAC AA:BB:CC:DD:EE:01 (Example Vendor)</div><div class='overflow'><table><thead><tr><th data-sort='0'>Port</th><th data-sort='1'>Service</th><th data-sort='2'>Version</th><th>Note</th></tr></thead><tbody><tr data-host='1' data-risk='1' data-search='192.168.1.10 pve1.lan 22 ssh openssh 9.2'><td>22/tcp</td><td>ssh</td><td>OpenSSH 9.2</td><td><span class='flag'>⚠️ SSH: ensure key-based auth only</span></td></tr><tr data-host='1' data-risk='1' data-search='192.168.1.10 pve1.lan 8006 https proxmox'><td>8006/tcp</td><td>https</td><td>Proxmox</td><td><span class='flag'>⚠️ Proxmox web UI</span></td></tr></tbody></table></div></div></details><script>
+(function(){
+  const q   = document.getElementById('q');
+  const sel = document.getElementById('risk-filter');
+  const rows = Array.from(document.querySelectorAll('tr[data-host]'));
+  const noRes = document.getElementById('no-results');
+
+  function filter(){
+    const txt  = q.value.toLowerCase();
+    const risk = sel.value;
+    let shown = 0;
+    rows.forEach(r => {
+      const match =
+        (!txt  || r.dataset.search.includes(txt)) &&
+        (!risk || r.dataset.risk === risk);
+      r.style.display = match ? '' : 'none';
+      if(match) shown++;
+      // keep parent details open/visible
+      const det = r.closest('details');
+      if(det){
+        const anyVisible = det.querySelectorAll('tr[data-host]:not([style*="none"])').length > 0;
+        det.style.display = anyVisible || !txt && !risk ? '' : 'none';
+      }
+    });
+    noRes.style.display = shown === 0 ? 'block' : 'none';
+  }
+
+  q.addEventListener('input', filter);
+  sel.addEventListener('change', filter);
+
+  // Sort table columns
+  document.querySelectorAll('th[data-sort]').forEach(th => {
+    th.style.cursor = 'pointer';
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      const tbody = th.closest('table').querySelector('tbody');
+      const trows = Array.from(tbody.querySelectorAll('tr'));
+      const asc = th.dataset.asc !== 'true';
+      th.dataset.asc = asc;
+      trows.sort((a,b) => {
+        const av = a.cells[parseInt(col)].textContent.trim();
+        const bv = b.cells[parseInt(col)].textContent.trim();
+        const an = parseFloat(av), bn = parseFloat(bv);
+        if(!isNaN(an) && !isNaN(bn)) return asc ? an-bn : bn-an;
+        return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+      });
+      trows.forEach(r => tbody.appendChild(r));
+    });
+  });
+})();
+</script></main></body></html>

@@ -255,6 +255,9 @@ tr:last-child td{border-bottom:none}
       padding:1px 7px;font-size:.78rem;white-space:nowrap}
 .cve{color:var(--mut);font-size:.78rem;display:block;margin-top:2px}
 .overflow{overflow-x:auto}
+.disclaimer{background:var(--warnbg);border:1px solid var(--warn);color:var(--warn);
+  border-radius:8px;padding:10px 14px;font-size:.85rem;margin-bottom:20px;line-height:1.5}
+.disclaimer strong{display:block;margin-bottom:2px}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
 .filters input,.filters select{
   background:var(--card);color:var(--fg);border:1px solid var(--line);
@@ -338,6 +341,13 @@ def render(hosts: list[dict], target: str, cve: bool = False, nvd_key: str = "")
         f"<div class='stat'><b>{len(hosts)}</b><span>hosts up</span></div>",
         f"<div class='stat'><b>{total_ports}</b><span>open ports</span></div>",
         f"<div class='stat'><b>{flagged}</b><span>ports to review</span></div>",
+        "</div>",
+        "<div class='disclaimer'>"
+        "<strong>⚠️ Legal use only</strong>"
+        "Pawprint is provided for authorised network scanning only. "
+        "Only scan systems you own or have explicit written permission to test. "
+        "Unauthorised scanning may violate computer crime laws in your jurisdiction. "
+        "The author accepts no liability for misuse of this tool."
         "</div>",
         "<div class='filters'>",
         "<input id='q' type='search' placeholder='Filter by IP, host, service…' style='flex:1;min-width:180px'>",
